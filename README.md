@@ -1,1 +1,1 @@
-# Odd-Even-Sort-mit-MPI
+# Odd-Even Sort parallelisieren mit MPI
