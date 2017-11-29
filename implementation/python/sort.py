@@ -14,7 +14,7 @@ def sort():
         raise ValueError("cannot sort odd number of elements")
 
     local_data = np.array_split(global_unsorted_array, size)[rank]
-    for phase in range(size):
+    for phase in range(size + 1):
 
         global_sorted_array = gather_data_to_root_node(local_data)
         output_sorted_array(global_sorted_array, global_unsorted_array)
@@ -27,8 +27,6 @@ def sort():
             continue
 
         local_data = iterate_phase(local_data, partner)
-
-
 
 
 def output_sorted_array(global_sorted_array, global_unsorted_array):
@@ -55,11 +53,27 @@ def iterate_phase(local_data, partner):
     partner_data = exchange_with_partner(local_data, partner)
 
     if rank < partner:
-        partner_data = np.maximum(local_data, partner_data)
-        local_data = np.minimum(local_data, partner_data)
+        while True:
+            mini = np.argmin(partner_data)
+            maxi = np.argmax(local_data)
+
+            if partner_data[mini] < local_data[maxi]:
+                temp = partner_data[mini]
+                partner_data[mini] = local_data[maxi]
+                local_data[maxi] = temp
+            else:
+                break
     else:
-        partner_data = np.minimum(local_data, partner_data)
-        local_data = np.maximum(local_data, partner_data)
+        while True:
+            maxi = np.argmax(partner_data)
+            mini = np.argmin(local_data)
+
+            if partner_data[maxi] > local_data[mini]:
+                temp = partner_data[maxi]
+                partner_data[maxi] = local_data[mini]
+                local_data[mini] = temp
+            else:
+                break
     return local_data
 
 
