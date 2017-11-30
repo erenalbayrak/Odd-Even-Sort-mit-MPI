@@ -10,15 +10,26 @@ size = comm.Get_size()  # total number of processes in the communicator
 
 def sort():
     global_unsorted_array = np.load(constants.NUMBER_FILE)
-    if global_unsorted_array.size % 2 is not 0:
-        raise ValueError("cannot sort odd number of elements")
+
+    # if global_unsorted_array.size % 2 is not 0:
+    #    raise ValueError("cannot sort odd number of elements")
 
     local_data = np.array_split(global_unsorted_array, size)[rank]
+
+    local_data = do_odd_even_sort(local_data)
+
+    output(global_unsorted_array, local_data)
+
+
+def output(global_unsorted_array, local_data):
+    global_sorted_array = gather_data_to_root_node(local_data)
+    if rank == 0:
+        print(global_unsorted_array)
+        print(global_sorted_array.flatten())
+
+
+def do_odd_even_sort(local_data):
     for phase in range(size + 1):
-
-        global_sorted_array = gather_data_to_root_node(local_data)
-        output_sorted_array(global_sorted_array, global_unsorted_array)
-
         local_data = np.sort(local_data)  # quicksort
 
         partner = get_next_partner(phase)
@@ -27,11 +38,7 @@ def sort():
             continue
 
         local_data = iterate_phase(local_data, partner)
-
-
-def output_sorted_array(global_sorted_array, global_unsorted_array):
-    if rank == 0:
-        print(global_sorted_array.flatten())
+    return local_data
 
 
 def gather_data_to_root_node(local_data):
@@ -54,24 +61,24 @@ def iterate_phase(local_data, partner):
 
     if rank < partner:
         while True:
-            mini = np.argmin(partner_data)
-            maxi = np.argmax(local_data)
+            min_idx = np.argmin(partner_data)
+            max_idx = np.argmax(local_data)
 
-            if partner_data[mini] < local_data[maxi]:
-                temp = partner_data[mini]
-                partner_data[mini] = local_data[maxi]
-                local_data[maxi] = temp
+            if partner_data[min_idx] < local_data[max_idx]:
+                temp = partner_data[min_idx]
+                partner_data[min_idx] = local_data[max_idx]
+                local_data[max_idx] = temp
             else:
                 break
     else:
         while True:
-            maxi = np.argmax(partner_data)
-            mini = np.argmin(local_data)
+            max_idx = np.argmax(partner_data)
+            min_idx = np.argmin(local_data)
 
-            if partner_data[maxi] > local_data[mini]:
-                temp = partner_data[maxi]
-                partner_data[maxi] = local_data[mini]
-                local_data[mini] = temp
+            if partner_data[max_idx] > local_data[min_idx]:
+                temp = partner_data[max_idx]
+                partner_data[max_idx] = local_data[min_idx]
+                local_data[min_idx] = temp
             else:
                 break
     return local_data
@@ -79,8 +86,12 @@ def iterate_phase(local_data, partner):
 
 def exchange_with_partner(local_data, partner):
     partner_data = np.empty(local_data.size, dtype=np.int)
-    comm.Send(local_data, dest=partner, tag=42)
-    comm.Recv(partner_data, source=partner, tag=42)
+    if rank % 2 == 0:  # avoid deadlock while sending and writing
+        comm.Send(local_data, dest=partner, tag=42)
+        comm.Recv(partner_data, source=partner, tag=42)
+    else:
+        comm.Recv(partner_data, source=partner, tag=42)
+        comm.Send(local_data, dest=partner, tag=42)
     return partner_data
 
 
