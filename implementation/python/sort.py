@@ -11,8 +11,8 @@ size = comm.Get_size()  # total number of processes in the communicator
 def sort():
     global_unsorted_array = np.load(constants.NUMBER_FILE)
 
-    # if global_unsorted_array.size % 2 is not 0:
-    #    raise ValueError("cannot sort odd number of elements")
+    if global_unsorted_array.size % 2 is not 0:
+        raise ValueError("cannot sort odd number of elements")
 
     local_data = np.array_split(global_unsorted_array, size)[rank]
 
