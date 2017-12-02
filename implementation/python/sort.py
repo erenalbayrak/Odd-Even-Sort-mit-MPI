@@ -15,10 +15,41 @@ def sort():
         raise ValueError("cannot sort odd number of elements")
 
     local_data = np.array_split(global_unsorted_array, size)[rank]
-
     local_data = do_odd_even_sort(local_data)
-
     output(global_unsorted_array, local_data)
+
+
+def do_odd_even_sort(local_data):
+    partners = calculate_partners()
+    for phase in range(size + 1):
+        local_data = np.sort(local_data)  # quicksort
+        partner = partners[phase % 2]
+        if partner is None:
+            continue
+        local_data = iterate_phase(local_data, partner)
+    return local_data
+
+
+def calculate_partners():
+    even_partner = validate_partner(rank + 1 if rank % 2 == 0 else rank - 1)
+    odd_partner = validate_partner(rank - 1 if rank % 2 == 0 else rank + 1)
+    return {0: even_partner, 1: odd_partner}
+
+
+def validate_partner(p):
+    return None if p < 0 or p >= size else p
+
+
+def iterate_phase(local_data, partner):
+    partner_data = exchange_partner_data(local_data, partner)
+    data = np.sort(np.concatenate([local_data, partner_data]))
+    return data[:local_data.size] if rank < partner else data[local_data.size:]
+
+
+def exchange_partner_data(local_data, partner):
+    partner_data = np.empty(local_data.size, dtype=np.int)
+    comm.Sendrecv(local_data, dest=partner, recvbuf=partner_data, source=partner)
+    return partner_data
 
 
 def output(global_unsorted_array, local_data):
@@ -28,71 +59,12 @@ def output(global_unsorted_array, local_data):
         print(global_sorted_array.flatten())
 
 
-def do_odd_even_sort(local_data):
-    for phase in range(size + 1):
-        local_data = np.sort(local_data)  # quicksort
-
-        partner = get_next_partner(phase)
-        # TODO get out of loop to improve performance, partner and oddPartner can be calculated in advance
-        if partner < 0 or partner >= size:
-            continue
-
-        local_data = iterate_phase(local_data, partner)
-    return local_data
-
-
 def gather_data_to_root_node(local_data):
     global_sorted_array = None
     if rank == 0:
         global_sorted_array = np.empty([size, local_data.size], dtype=np.int)
     comm.Gather(local_data, global_sorted_array, root=0)
     return global_sorted_array
-
-
-def get_next_partner(phase):
-    if phase % 2 == 0:
-        return rank + 1 if rank % 2 == 0 else rank - 1
-    else:
-        return rank - 1 if rank % 2 == 0 else rank + 1
-
-
-def iterate_phase(local_data, partner):
-    partner_data = exchange_with_partner(local_data, partner)
-
-    if rank < partner:
-        while True:
-            min_idx = np.argmin(partner_data)
-            max_idx = np.argmax(local_data)
-
-            if partner_data[min_idx] < local_data[max_idx]:
-                temp = partner_data[min_idx]
-                partner_data[min_idx] = local_data[max_idx]
-                local_data[max_idx] = temp
-            else:
-                break
-    else:
-        while True:
-            max_idx = np.argmax(partner_data)
-            min_idx = np.argmin(local_data)
-
-            if partner_data[max_idx] > local_data[min_idx]:
-                temp = partner_data[max_idx]
-                partner_data[max_idx] = local_data[min_idx]
-                local_data[min_idx] = temp
-            else:
-                break
-    return local_data
-
-
-def exchange_with_partner(local_data, partner):
-    partner_data = np.empty(local_data.size, dtype=np.int)
-    if rank % 2 == 0:  # avoid deadlock while sending and writing
-        comm.Send(local_data, dest=partner, tag=42)
-        comm.Recv(partner_data, source=partner, tag=42)
-    else:
-        comm.Recv(partner_data, source=partner, tag=42)
-        comm.Send(local_data, dest=partner, tag=42)
-    return partner_data
 
 
 try:
