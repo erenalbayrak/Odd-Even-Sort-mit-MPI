@@ -29,16 +29,30 @@ def output(global_unsorted_array, local_data):
 
 
 def do_odd_even_sort(local_data):
+    partners = calculate_partners()
     for phase in range(size + 1):
         local_data = np.sort(local_data)  # quicksort
-
-        partner = get_next_partner(phase)
-        # TODO get out of loop to improve performance, partner and oddPartner can be calculated in advance
-        if partner < 0 or partner >= size:
+        partner = partners[phase % 2]
+        if partner is None:
             continue
-
         local_data = iterate_phase(local_data, partner)
     return local_data
+
+
+def calculate_partners():
+    right_partner = rank + 1
+    left_partner = rank - 1
+    is_even_rank = rank % 2 == 0
+    even_phase_partner = right_partner if is_even_rank else left_partner
+    odd_phase_partner = left_partner if is_even_rank else right_partner
+    even_phase_partner = validate_partner(even_phase_partner)
+    odd_phase_partner = validate_partner(odd_phase_partner)
+    partner_dict = {0: even_phase_partner, 1: odd_phase_partner}
+    return partner_dict
+
+
+def validate_partner(p):
+    return None if p < 0 or p >= size else p
 
 
 def gather_data_to_root_node(local_data):
@@ -47,13 +61,6 @@ def gather_data_to_root_node(local_data):
         global_sorted_array = np.empty([size, local_data.size], dtype=np.int)
     comm.Gather(local_data, global_sorted_array, root=0)
     return global_sorted_array
-
-
-def get_next_partner(phase):
-    if phase % 2 == 0:
-        return rank + 1 if rank % 2 == 0 else rank - 1
-    else:
-        return rank - 1 if rank % 2 == 0 else rank + 1
 
 
 def iterate_phase(local_data, partner):
