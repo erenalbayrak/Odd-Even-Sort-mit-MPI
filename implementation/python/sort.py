@@ -43,12 +43,9 @@ def calculate_partners():
     right_partner = rank + 1
     left_partner = rank - 1
     is_even_rank = rank % 2 == 0
-    even_phase_partner = right_partner if is_even_rank else left_partner
-    odd_phase_partner = left_partner if is_even_rank else right_partner
-    even_phase_partner = validate_partner(even_phase_partner)
-    odd_phase_partner = validate_partner(odd_phase_partner)
-    partner_dict = {0: even_phase_partner, 1: odd_phase_partner}
-    return partner_dict
+    even_partner = validate_partner(right_partner if is_even_rank else left_partner)
+    odd_partner = validate_partner(left_partner if is_even_rank else right_partner)
+    return {0: even_partner, 1: odd_partner}
 
 
 def validate_partner(p):
