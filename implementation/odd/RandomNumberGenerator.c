@@ -42,14 +42,14 @@ char* getCreateFileName(char *strCountNumbersToGenerate)
     int fileNameLength = strlen(strCountNumbersToGenerate) + 
                          strlen(" numbers - ") + 
                          strlen(strActualTime) + 
-                         strlen(".txt") + 1;
+                         strlen(".bin") + 1;
     char *fileName;
     fileName = (char*) malloc(fileNameLength * sizeof(char));
     
     strcpy(fileName, strCountNumbersToGenerate);
     strcat(fileName, " numbers - ");
     strcat(fileName, strActualTime);
-    strcat(fileName, ".txt");
+    strcat(fileName, ".bin");
     
     return fileName;
 }
@@ -57,8 +57,8 @@ char* getCreateFileName(char *strCountNumbersToGenerate)
 
 /** 
  * This program generates random numbers.
- * The result will save into a file named "<countNumbersToGenerate> numbers -<Current Date>.txt
- * Example: "1000 numbers - Tue Oct 31 15:41:15 2017.txt"
+ * The result will save into a file named "<countNumbersToGenerate> numbers - <Current Date>.bin"
+ * Example: "1000 numbers - Tue Oct 31 15:41:15 2017.bin"
  * The file will created in the same directory, where this program will executed."
  * 
  * @param (mandatory): -countNumbersToGenerate X where X is the count of desired random numbers. Data type is unsigned long long
@@ -77,10 +77,9 @@ int main(int argCount, char *argValues[])
         return EXIT_FAILURE;
     }
     
-    
     char *fileName   = getCreateFileName(argValues[0]);
-    FILE *fileResult = fopen(fileName, "w");
-    if(fileResult == NULL) 
+    FILE *resultFile = fopen(fileName, "wb");
+    if(resultFile == NULL) 
     {
         printf("Error. Can't open the result file.\n");
         return EXIT_FAILURE;
@@ -89,16 +88,14 @@ int main(int argCount, char *argValues[])
     srand(time(NULL));
     unsigned long long i;
     for(i=0; i<countNumbersToGenerate; i++) 
-    {
-        if(i+1 < countNumbersToGenerate)
-            fprintf( fileResult, "%d,", rand() );
-        else
-            fprintf( fileResult, "%d", rand() );
+    {   
+        int randNumber = rand();
+        fwrite(&randNumber, sizeof randNumber, 1, resultFile);
     }
     
     printf("Resultfile was created: \"%s\"\n", fileName);
     
-    fclose(fileResult);
+    fclose(resultFile);
     free(fileName);
     
     return EXIT_SUCCESS;
