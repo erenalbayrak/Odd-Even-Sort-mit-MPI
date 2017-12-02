@@ -90,12 +90,7 @@ def iterate_phase(local_data, partner):
 
 def exchange_with_partner(local_data, partner):
     partner_data = np.empty(local_data.size, dtype=np.int)
-    if rank % 2 == 0:  # avoid deadlock while sending and writing
-        comm.Send(local_data, dest=partner, tag=42)
-        comm.Recv(partner_data, source=partner, tag=42)
-    else:
-        comm.Recv(partner_data, source=partner, tag=42)
-        comm.Send(local_data, dest=partner, tag=42)
+    comm.Sendrecv(local_data, dest=partner, recvbuf=partner_data, source=partner)
     return partner_data
 
 
