@@ -1,30 +1,52 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 #include <mpi.h>
+#include <vector>
+
+using namespace std;
 
 /* the number of data elements in each process */
-#define N 4
+unsigned long long count_elements = 0;
 
+/**
+ * @param binary_file: the binary file on Disk.
+ * @param vector: the values from binary file will store in the vector.
+ * */
+void fill_vector_from_binary_file(vector<int> *vector,
+                                  char *binary_file,
+                                  long rank,
+                                  int count_nodes)
+{
+    FILE *filePtr = fopen(binary_file, "rb");
+    fseek(filePtr, 0, SEEK_END);
 
-/* initialize the data to random values based on rank (so they're different) */
-void init(int* data, int rank) 
-{    
-  //printf("Initialisieren der Zufallszahlen für Knoten(rank) = %d\n", rank);
-  int i;
-  srand(rank);
-  for (i = 0; i < N; i++) {
-    data[i] = rand( ) % 100;
-  }
+    unsigned long count_all_elements = ftell(filePtr) / sizeof(int);
+    rewind(filePtr);
+
+    unsigned long vectorSize = count_all_elements / count_nodes;
+
+    // Allocate memory for vector.
+    vector->reserve(vectorSize + 5);
+    auto *buffer = new int(1);
+
+    for(long i=rank; i<count_all_elements; i=i+count_nodes)
+    {
+        fseek(filePtr, i, SEEK_SET);
+        fread(buffer, 1, sizeof(int), filePtr);
+
+        vector->push_back(*buffer);
+    }
+    delete(buffer);
 }
 
 /* print the data to the screen */
-void print(int* data, int rank) {
-  int i;
-  printf("Process %d: ");
-  for (i = 0; i < N; i++) {
-    printf("%d ", data[i]);
-  }
-  printf("\n");
+void print(vector<int> *vector, int rank)
+{
+    cout << "rank " << rank << " : ";
+    for(unsigned long i=0; i<vector->size(); i++)
+    {
+        cout << vector->at(i) << " ";
+    }
+    cout << endl;
 }
 
 /* comparison function for qsort */
@@ -45,7 +67,7 @@ int cmp(const void* ap, const void* bp) {
 int max_index(int* data) {
   int i, max = data[0], maxi = 0;
 
-  for (i = 1; i < N; i++) {
+  for (i = 1; i < count_elements; i++) {
     if (data[i] > max) {
       max = data[i];
       maxi = i;
@@ -58,7 +80,7 @@ int max_index(int* data) {
 int min_index(int* data) {
   int i, min = data[0], mini = 0;
 
-  for (i = 1; i < N; i++) {
+  for (i = 1; i < count_elements; i++) {
     if (data[i] < min) {
       min = data[i];
       mini = i;
@@ -68,20 +90,18 @@ int min_index(int* data) {
 }
 
 
-/* do the parallel odd/even sort */
+/* do the parallel c++/even sort */
 void parallel_sort(int* data, int rank, int size) {
   int i;
 
   /* the array we use for reading from partner */
-  int other[N];
+  int other[count_elements];
 
   /* we need to apply P phases where P is the number of processes */
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) 
+  {
     /* sort our local array */
-    qsort(data, N, sizeof(int), &cmp);
-
-    printf("### i = %d ### ", i);
-    print(data, rank);
+    qsort(data, count_elements, sizeof(int), &cmp);
     
     /* find our partner on this phase */
     int partener;
@@ -95,7 +115,7 @@ void parallel_sort(int* data, int rank, int size) {
         partener = rank - 1;
       }
     } else {
-      /* it's an odd phase - do the opposite */
+      /* it's an c++ phase - do the opposite */
       if (rank % 2 == 0) {
         partener = rank - 1;
       } else {
@@ -108,14 +128,14 @@ void parallel_sort(int* data, int rank, int size) {
       continue;
     }
 
-    /* do the exchange - even processes send first and odd processes receive first
+    /* do the exchange - even processes send first and c++ processes receive first
      * this avoids possible deadlock of two processes working together both sending */
     if (rank % 2 == 0) {
-      MPI_Send(data, N, MPI_INT, partener, 0, MPI_COMM_WORLD);
-      MPI_Recv(other, N, MPI_INT, partener, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Send(data, count_elements, MPI_INT, partener, 0, MPI_COMM_WORLD);
+      MPI_Recv(other, count_elements, MPI_INT, partener, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     } else {
-      MPI_Recv(other, N, MPI_INT, partener, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      MPI_Send(data, N, MPI_INT, partener, 0, MPI_COMM_WORLD);
+      MPI_Recv(other, count_elements, MPI_INT, partener, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Send(data, count_elements, MPI_INT, partener, 0, MPI_COMM_WORLD);
     }
 
     /* now we need to merge data and other based on if we want smaller or larger ones */
@@ -162,32 +182,31 @@ void parallel_sort(int* data, int rank, int size) {
 }
 
 
-int main(int argc, char** argv) 
+/**
+ * Compile: mpic++ OddEvenSort.cpp
+ *
+ * Example-Call: mpirun -n 4 ./a.out "numbers.bin"
+ * */
+int main(int argCount, char** argValues)
 {
-  /* our rank and size */
-  int rank, size;
-  
-  /* our processes data */
-  int data[N];
-  
-  /* initialize MPI */
-  MPI_Init(&argc, &argv);
-  
-  /* get the rank (process id) and size (number of processes) */
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  
-  /* initialize the data */
-  init(data, rank);
+    int rank, count_nodes;
 
-  /* do the parallel odd/even sort */
+    MPI_Init(&argCount, &argValues);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &count_nodes);
+
+    vector<int> vector;
+    fill_vector_from_binary_file(&vector, argValues[1], rank, count_nodes);
+
+    print(&vector, rank);
+
+  /*
   parallel_sort(data, rank, size);
-
+  
   printf("\nAfter parallel sorting:\n");
-  /* now print our data */
   print(data, rank);
+  */
 
-  /* quit MPI */
-  MPI_Finalize( );
+  MPI_Finalize();
   return 0;
 }

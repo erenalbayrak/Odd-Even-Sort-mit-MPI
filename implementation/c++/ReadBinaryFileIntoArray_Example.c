@@ -14,21 +14,21 @@ int main(int argCount, char *argValues[])
     FILE *filePtr = fopen(argValues[1], "rb");      // Open the file in binary mode
     fseek(filePtr, 0, SEEK_END);                    // Jump to the end of the file
     
-    unsigned long long fileLength = ftell(filePtr); // Get the current byte offset in the file
+    long int fileLength = ftell(filePtr); // Get the current byte offset in the file
     fileLength = fileLength / sizeof(int);
     rewind(filePtr);                                // Jump back to the beginning of the file
     
     int *buffer = malloc(sizeof(int) * (fileLength));
-    fread(buffer, fileLength, sizeof(int), filePtr); // Read the entire file
+    fread(buffer, (size_t) fileLength, sizeof(int), filePtr); // Read the entire file
     
-    printf("File lenght / sizeof(int) = %d Bytes\n", fileLength);
+    printf("File lenght / sizeof(int) = %li Bytes\n", fileLength);
     
     if( argCount == 3 && strcmp(argValues[2], "y") == 0 )
     {
-        unsigned long long i=0;
+        long int i=0;
         while(i < fileLength)
         {
-            printf("%d. = %d\n", i, buffer[i]);
+            printf("%li. = %d\n", i, buffer[i]);
             i++;
         }
     }
