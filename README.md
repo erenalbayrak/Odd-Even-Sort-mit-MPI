@@ -1,4 +1,4 @@
-# Odd-Even Sort parallel with MPI
+# Odd-Even Sort parallel with MPI in C++ and Python
 
 The base implementation was taken from here:
 http://cs.umw.edu/~finlayson/class/fall14/cpsc425/notes/18-sorting.html
