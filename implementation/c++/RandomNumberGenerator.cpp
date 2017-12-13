@@ -1,9 +1,9 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <string.h>
 
 using namespace std;
-
 
 string create_file_name(char *strCountNumbersToGenerate)
 {
@@ -26,7 +26,8 @@ string create_file_name(char *strCountNumbersToGenerate)
  * Example: "1000 numbers - Tue Oct 31 15:41:15 2017.bin"
  * The file will created in the same directory, where this program will executed."
  *
- * Example call: ./RandomNumbers 1600
+ * Call with output on console:     ./RandomNumbers 1600 y
+ * Call without output on console:  ./RandomNumbers 1600
  */
 int main(int argCount, char *argValues[]) 
 {
@@ -43,8 +44,12 @@ int main(int argCount, char *argValues[])
     for(int i=0; i<numbers_to_generate; i++)
     {   
         int randNumber = rand();
-        cout << randNumber << " ";
         fwrite(&randNumber, sizeof randNumber, 1, resultFile);
+
+        if( argCount > 2 && strcmp(argValues[2], "y")==0 )
+        {
+            cout << randNumber << " ";
+        }
     }
     
     cout << endl << "Result file created: " <<  file_name << endl;
