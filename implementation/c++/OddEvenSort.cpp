@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <cstring>
 
 using namespace std;
 
@@ -201,7 +202,8 @@ void parallel_sort(vector<int> *data, int rank, int size)
 /**
  * Compile: mpic++ OddEvenSort.cpp
  *
- * Example-Call: mpirun -n 4 ./a.out "<numbers_file.bin>"
+ * Example-Call: mpirun -n 4 ./a.out "<numbers_file.bin>" <y or nothing>
+ * y == output on console
  * */
 int main(int argCount, char** argValues)
 {
@@ -216,7 +218,10 @@ int main(int argCount, char** argValues)
 
     parallel_sort(&vec_data, rank, count_nodes);
 
-    print(&vec_data, rank);
+    if(argCount > 2 && strcmp(argValues[2], "y") == 0)
+    {
+        print(&vec_data, rank);
+    }
 
     MPI_Finalize();
     return 0;

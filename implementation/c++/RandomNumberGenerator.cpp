@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include <string>
-#include <string.h>
+#include <cstring>
 
 using namespace std;
 
@@ -26,6 +26,7 @@ string create_file_name(char *strCountNumbersToGenerate)
  * Example: "1000 numbers - Tue Oct 31 15:41:15 2017.bin"
  * The file will created in the same directory, where this program will executed."
  *
+ * Compile: g++ RandomNumberGenerator.cpp -o RandomNumberGenerator -std=gnu++0x
  * Call with output on console:     ./RandomNumbers 1600 y
  * Call without output on console:  ./RandomNumbers 1600
  */
