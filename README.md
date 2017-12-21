@@ -5,19 +5,19 @@ http://cs.umw.edu/~finlayson/class/fall14/cpsc425/notes/18-sorting.html
 
 We extend the base implemantion. One in C++. One in Python.
 
-In both extensions, the nodes read the random values from a binary file.
+In both extensions, the proccesses read the random values from a binary file.
 
-The C++ implementation can also deal with non even proportion of nodes and count of values. 
+The C++ implementation can also deal with non even proportion of proccesses and count of values. 
 
 ## C++ Implementation:
 
-Install MPICH: http://mpitutorial.com/tutorials/installing-mpich2/
+Install MPICH2: http://mpitutorial.com/tutorials/installing-mpich2/
 
 1. Generating binary file with random values:
 
    Compile:
    ```
-   g++ RandomNumberGenerator.cpp -o RandomNumberGenerator
+   g++ RandomNumberGenerator.cpp -o RandomNumberGenerator -std=gnu++0x
    ```
    Run:
    ```
