@@ -115,17 +115,14 @@ void parallel_sort(vector<int> *data, int rank, int size)
         if (rank < partener)
         {
             /* keep smaller keys */
-            for(unsigned long iOther = 0; iOther < other->size(); iOther++)
+            for(long iOther = 0; iOther < other->size(); iOther++)
             {
-                int actOtherValue = other->at(iOther);
+                int actOtherValue = other->at((unsigned long) iOther);
                 if (actOtherValue < data->back())
                 {
                     dataIterator = lower_bound(data->begin(), data->end(), actOtherValue);
-                    //cout << "AAA" << endl;
                     data->insert(dataIterator, actOtherValue);
-                    //cout << "BBB" << endl;
                     data->erase(data->end()-1);
-                    //cout << "CCC" << endl;
                 }
                 else
                     break;
@@ -134,18 +131,14 @@ void parallel_sort(vector<int> *data, int rank, int size)
         else
         {
             /* keep larger keys */
-            for(unsigned long iOther = other->size()-1; iOther >= 0; iOther--)
+            for(long iOther = other->size()-1; iOther >= 0; iOther--)
             {
-                int actOtherValue = other->at(iOther);
+                int actOtherValue = other->at((unsigned long) iOther);
                 if (actOtherValue > data->front())
                 {
-                    //cout << "act val = " << actOtherValue << endl;
                     dataIterator = upper_bound(data->begin(), data->end(), actOtherValue);
-                    //cout << "AAA" << endl;
                     data->insert(dataIterator, actOtherValue);
-                    //cout << "BBB" << endl;
                     data->erase(data->begin());
-                    //cout << "CCC" << endl;
                 }
                 else
                     break;
