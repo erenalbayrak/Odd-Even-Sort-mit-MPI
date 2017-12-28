@@ -47,55 +47,18 @@ void print(vector<int> *vector, int rank)
     cout << endl;
 }
 
-/* find the index of the largest item in an array */
-unsigned long int max_index(vector<int> *data)
-{
-    int max = data->at(0);
-    unsigned long int maxi = 0;
-
-    for( unsigned long int i = 1; i < data->size(); i++ )
-    {
-        if(data->at(i) > max)
-        {
-          max = data->at(i);
-          maxi = i;
-        }
-    }
-    return maxi;
-}
-
-/* find the index of the smallest item in an array */
-unsigned long int min_index(vector<int> *data)
-{
-    int min = data->at(0);
-    unsigned long int mini = 0;
-
-    for( unsigned long int i=1; i<data->size(); i++ )
-    {
-        if(data->at(i) < min)
-        {
-          min = data->at(i);
-          mini = i;
-        }
-    }
-  return mini;
-}
-
-
 /* do the parallel odd/even sort */
 void parallel_sort(vector<int> *data, int rank, int size)
 {
     /* The data from our partner. */
     vector<int> *other;
+    vector<int>::iterator dataIterator;
     MPI_Status status;
     int count_other;
 
     /* we need to apply P phases where P is the number of processes */
     for (int i=0; i<size; i++)
     {
-        /* sort our local array */
-        sort(data->begin(), data->end());
-
         /* find our partner on this phase */
         int partener;
 
@@ -149,50 +112,37 @@ void parallel_sort(vector<int> *data, int rank, int size)
         }
 
         /* now we need to merge data and other based on if we want smaller or larger ones */
-        if (rank < partener) {
-          /* keep smaller keys */
-          while (true)
-          {
-              /* find the smallest one in the other array */
-              unsigned long int mini = min_index(other);
-
-              /* find the largest one in out array */
-              unsigned long int maxi = max_index(data);
-
-                /* if the smallest one in the other array is less than the largest in ours, swap them */
-                if (other->at(mini) < data->at(maxi))
+        if (rank < partener)
+        {
+            /* keep smaller keys */
+            for(long iOther = 0; iOther < other->size(); iOther++)
+            {
+                int actOtherValue = other->at((unsigned long) iOther);
+                if (actOtherValue < data->back())
                 {
-                    int temp = other->at(mini);
-                    other->at(mini) = data->at(maxi);
-                    data->at(maxi) = temp;
-                } else {
-                  /* else stop because the smallest are now in data */
-                  break;
+                    dataIterator = lower_bound(data->begin(), data->end(), actOtherValue);
+                    data->insert(dataIterator, actOtherValue);
+                    data->erase(data->end()-1);
                 }
-          }
+                else
+                    break;
+            }
         }
         else
         {
-          /* keep larger keys */
-          while (true)
-          {
-              /* find the largest one in the other array */
-              unsigned long int maxi = max_index(other);
-
-              /* find the largest one in out array */
-              unsigned long int mini = min_index(data);
-
-              /* if the largest one in the other array is bigger than the smallest in ours, swap them */
-              if (other->at(maxi) > data->at(mini))
-              {
-                  int temp = other->at(maxi);
-                  other->at(maxi) = data->at(mini);
-                  data->at(mini) = temp;
-              } else {
-                /* else stop because the largest are now in data */
-                break;
+            /* keep larger keys */
+            for(long iOther = other->size()-1; iOther >= 0; iOther--)
+            {
+                int actOtherValue = other->at((unsigned long) iOther);
+                if (actOtherValue > data->front())
+                {
+                    dataIterator = upper_bound(data->begin(), data->end(), actOtherValue);
+                    data->insert(dataIterator, actOtherValue);
+                    data->erase(data->begin());
+                }
+                else
+                    break;
             }
-          }
         }
         delete(other);
     }
@@ -215,6 +165,9 @@ int main(int argCount, char** argValues)
 
     vector<int> vec_data;
     fill_vector_from_binary_file(&vec_data, argValues[1], rank, count_nodes);
+
+    /* sort our local vector */
+    sort(vec_data.begin(), vec_data.end());
 
     parallel_sort(&vec_data, rank, count_nodes);
 
