@@ -33,16 +33,21 @@ int fill_vector_from_binary_file(vector<int> *vector,
     }
 
     // Allocate memory for vector.
-    vector->reserve(vector_size);
+    vector->resize(vector_size);
 
     int actual_value;
+    unsigned long iVector = 0;
     for(long int i = rank * sizeof(int);
         i < count_all_bytes;
         i = i + sizeof(int) * count_processes)
     {
         bin_file.seekg(i, ios::beg);
         bin_file.read(reinterpret_cast<char *>(&actual_value), sizeof(actual_value));
-        vector->push_back(actual_value);
+        /*
+         * push_back do always a bad alloc exception if dealing with size > 1 GB
+         * vector->push_back(actual_value);
+         * */
+        vector->at(iVector++) = actual_value;
     }
     return EXIT_SUCCESS;
 }
