@@ -47,15 +47,15 @@ The [result-table](#header_table_python) with the python implementation (process
    ```
    Run on single machine:
    ```
-   mpirun -n <count_proccesses> ./OddEvenSort "<numbers_file.bin>"
+   mpirun -np <count_proccesses> ./OddEvenSort "<numbers_file.bin>"
    ```
    Example-Call:
    ```
-   mpirun -n 4 ./OddEvenSort "100 numbers - Wed Dez 13 21:42:25 2017.bin"
+   mpirun -np 4 ./OddEvenSort "100 numbers - Wed Dez 13 21:42:25 2017.bin"
    ```
    On a cluster you have to fill your hostfile (/etc/hosts) and pass it with the -f flag like:
    ```
-   mpirun -n 4 -f hosts ./OddEvenSort "100 numbers - Wed Dez 13 21:42:25 2017.bin"
+   mpirun -np 4 -f hosts ./OddEvenSort "100 numbers - Wed Dez 13 21:42:25 2017.bin"
    ```
 <a name="header_table_c++"></a>
 ### Result table C++
