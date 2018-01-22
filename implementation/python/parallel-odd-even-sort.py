@@ -1,7 +1,23 @@
-from mpi4py import MPI
-import numpy as np
+import os
 
-import constants
+try:
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    import numpy as np
+finally:
+    del os.environ["OMP_NUM_THREADS"]
+    del os.environ["NUMEXPR_NUM_THREADS"]
+    del os.environ["MKL_NUM_THREADS"]
+
+from mpi4py import MPI
+import utils
+
+'''
+sort generated numbers stored in "numbers.npy" with e.g.: "mpiexec -np 4 python3 sort.py"
+time mpiexec -hostfile hosts -np 8 -byslot python3 /mnt/cluster_128/Folder_Gruppe_1/python/parallel-odd-even-sort.py
+
+'''
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()  # processId of the current process
@@ -9,7 +25,7 @@ size = comm.Get_size()  # total number of processes in the communicator
 
 
 def sort():
-    global_unsorted_array = np.load(constants.NUMBER_FILE)
+    global_unsorted_array = np.load(utils.get_numbers_file())
 
     if global_unsorted_array.size % 2 is not 0:
         raise ValueError("cannot sort odd number of elements")
@@ -67,7 +83,4 @@ def gather_data_to_root_node(local_data):
     return global_sorted_array
 
 
-try:
-    sort()
-except Exception as e:
-    print(str(e))
+sort()
