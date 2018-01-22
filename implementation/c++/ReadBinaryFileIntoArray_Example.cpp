@@ -20,7 +20,7 @@ int main(int argCount, char *argValues[])
 
     long int count_all_bytes = myFile.tellg();
     int array_size           = count_all_bytes / sizeof(int);
-    int *array               = new int[array_size];
+    auto *array               = new int[array_size];
 
     myFile.seekg(0, ios::beg);
     myFile.read(reinterpret_cast<char *>(array), sizeof(int) * array_size);
