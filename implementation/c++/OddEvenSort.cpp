@@ -34,7 +34,7 @@ int fill_vector_from_binary_file(int **data,
 
     *data = new int[data_size];
 
-    bin_file.seekg(rank * sizeof(int), ios::beg);
+    bin_file.seekg(rank * sizeof(int) * data_size, ios::beg);
     bin_file.read(reinterpret_cast<char *>(*data), sizeof(int) * data_size);
 
     return EXIT_SUCCESS;
