@@ -62,9 +62,9 @@ The [result-table](#header_table_python) with the python implementation (process
 
 Time in seconds.
 
-| Count Processes | 15     | Scaling | 30     | Scaling | 60     | Scaling | 120    | Scaling | 240     | Scaling | 480     | Scaling |
+| Count Processes | 15     |         | 30     |         | 60     |         | 120    |         | 240     |         | 480     |         |
 |-----------------|--------|---------|--------|---------|--------|---------|--------|---------|---------|---------|---------|---------|
-| Count Values    |        |         |        |         |        |         |        |         |         |         |         |         |
+| Count Values    |        | Scaling |        | Scaling |        | Scaling |        | Scaling |         | Scaling |         | Scaling |
 | 4.800           | 0,976  |         | 1,355  |         | 1,938  |         | 3,444  |         | 6,545   |         | 12,657  |         |
 | 48.000          | 1,027  | 1,052   | 1,368  | 1,010   | 2,064  | 1,065   | 3,539  | 1,028   | 6,775   | 1,035   | 12,711  | 1,004   |
 | 480.000         | 1,630  | 1,587   | 2,001  | 1,463   | 2,662  | 1,290   | 4,071  | 1,150   | 7,441   | 1,098   | 13,651  | 1,074   |
