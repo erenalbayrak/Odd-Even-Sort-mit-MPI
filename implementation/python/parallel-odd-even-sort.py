@@ -26,18 +26,22 @@ size = comm.Get_size()  # total number of processes in the communicator
 
 def sort():
     global_unsorted_array = np.load(utils.get_numbers_file())
-
-    if global_unsorted_array.size % 2 is not 0:
-        raise ValueError("cannot sort odd number of elements")
-
+    validate_generated_numbers(global_unsorted_array)
     local_data = np.array_split(global_unsorted_array, size)[rank]
     local_data = do_odd_even_sort(local_data)
     output(global_unsorted_array, local_data)
 
 
+def validate_generated_numbers(global_unsorted_array):
+    if global_unsorted_array.size % 2 is not 0:
+        raise ValueError("cannot sort odd number of elements")
+    if (global_unsorted_array.size / size) % 1 != 0.0:
+        raise ValueError("number of elements must be divisible by number of cores")
+
+
 def do_odd_even_sort(local_data):
     partners = calculate_partners()
-    for phase in range(size + 1):
+    for phase in range(size):
         partner = partners[phase % 2]
         if partner is None:
             continue
