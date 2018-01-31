@@ -42,7 +42,7 @@ int main(int argCount, char *argValues[])
 
     srand(time(NULL));
     long long int numbers_to_generate = atoll(argValues[1]);
-    for(int i=0; i<numbers_to_generate; i++)
+    for(long long int i=0; i<numbers_to_generate; i++)
     {   
         int randNumber = rand();
         fwrite(&randNumber, sizeof randNumber, 1, resultFile);
