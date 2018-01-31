@@ -38,7 +38,6 @@ def sort():
 def do_odd_even_sort(local_data):
     partners = calculate_partners()
     for phase in range(size + 1):
-        local_data = np.sort(local_data)  # quicksort
         partner = partners[phase % 2]
         if partner is None:
             continue
