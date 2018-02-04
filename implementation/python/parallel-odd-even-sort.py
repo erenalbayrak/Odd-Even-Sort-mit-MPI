@@ -15,7 +15,7 @@ import utils
 
 '''
 sort generated numbers stored in "numbers.npy" with e.g.: "mpiexec -np 4 python3 sort.py"
-time mpiexec -hostfile hosts -np 8 -byslot python3 /mnt/cluster_128/Folder_Gruppe_1/python/parallel-odd-even-sort.py
+time mpiexec -hostfile hosts -np 8 python3 /mnt/cluster_128/Folder_Gruppe_1/python/parallel-odd-even-sort.py
 
 '''
 

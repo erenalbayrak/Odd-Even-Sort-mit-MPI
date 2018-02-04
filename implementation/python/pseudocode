@@ -1,0 +1,16 @@
+rank = Get_rank()
+size = Get_size()  
+
+unsorted_array = read_random_array_from_file()
+local_data = split unsorted_array in (size) parts and get element at (rank)
+
+for i in 0..size:
+    is_even_phase = i % 2 == 0
+    partner = calculate next partner with (rank) and (is_even_phase)
+    partner_data = Sendrecv(local_data) 
+    data = concatinate (partner_data) and (local_data)
+    sort data
+    if rank < partner:
+        local_data = smaller values of data
+    else:
+        local_data = larger values of data
